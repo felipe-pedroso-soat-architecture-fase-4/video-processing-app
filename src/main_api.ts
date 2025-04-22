@@ -1,13 +1,12 @@
-import { ExtractVideoFrames } from "./application/usecases/ExtractVideoFrames";
-import { FFmpegVideoProcessorAdapter } from './infra/adapters/FFmpegWasmVideoProcessor';
-import { FileSystemVideoRepository } from "./infra/repositories/FileSystemVideoRepository";
+import { GeneratePresignedUrl } from "./application/usecases/GeneratePresignedUrl";
+import { GetVideoByUserId } from "./application/usecases/GetVideoByUserId";
+import { PrismaVideoRepository, } from "./infra/repositories/VideoRepository";
+import { S3VideoStorageService } from "./infra/storage/S3VideoStorageService";
 import { VideoController } from "./infra/server/controllers/VideoController";
-import { ZipArchiver } from "./infra/adapters/ZipArchiver";
 import express from 'express';
 import fs from 'fs';
-import multer from 'multer';
 import path from 'path';
-import { randomUUID } from 'crypto';
+import prisma from "./infra/database";
 
 class App {
   private app: express.Application;
@@ -29,31 +28,25 @@ class App {
   }
 
   private configureRoutes() {
-    const videoRepository = new FileSystemVideoRepository();
-    const videoProcessor = new FFmpegVideoProcessorAdapter();
-    const zipper = new ZipArchiver();
+    const s3StorageService = new S3VideoStorageService()
+    const videoRepository = new PrismaVideoRepository(prisma);
+    const generatePresignedUrl = new GeneratePresignedUrl(s3StorageService, videoRepository)
+    const getVideoByUserId = new GetVideoByUserId(videoRepository);
     
-    const extractFramesUseCase = new ExtractVideoFrames(
-      videoRepository,
-      videoProcessor,
-      zipper
-    );
+    const videoController = new VideoController(generatePresignedUrl, getVideoByUserId); 
 
-    const videoController = new VideoController(extractFramesUseCase);
-
-    const storage = multer.diskStorage({
-      destination: path.join(__dirname, 'uploads'),
-      filename: (req, file, cb) => {
-        const ext = path.extname(file.originalname);
-        const filename = `${randomUUID()}-${ext}`;
-        cb(null, filename);
+    this.app.post('/videos/generate-upload-url', async (req, res, next) => {
+      try {
+        await videoController.generateUploadUrl(req, res);
+        
+      } catch (error) {
+        next(error);
       }
     });
-    const upload = multer({ storage });
 
-    this.app.post('/videos/upload', upload.single('file'), async (req, res, next) => {
+    this.app.get('/videos/:userId', async (req, res, next) => {
       try {
-        await videoController.uploadVideo(req, res);
+        await videoController.listUserVideos(req, res);
       } catch (error) {
         next(error);
       }
@@ -67,5 +60,4 @@ class App {
   }
 }
 
-// Start the application
 new App(3000).start();

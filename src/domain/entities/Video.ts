@@ -1,34 +1,37 @@
-import { IVideoProcessor } from "../ports/IVideoProcessor";
-import { IZipper } from "../ports/IZipper";
-import { randomUUID } from "crypto";
 
 export class Video {
-    public readonly framesPath: string;
-    public zipPath: string | null = null;
-    public readonly id: string;
-    
     constructor(
-        public readonly originalPath: string,
-        private readonly processor: IVideoProcessor,
-        private readonly zipper: IZipper
-    ) {
-        this.id = this.generateId();
-        this.framesPath = `${originalPath}_frames/`;
+      public readonly id: string,
+      public readonly userId: string,
+      public status: 'AWAITING_UPLOAD' | 'QUEUED' | 'PROCESSING' | 'COMPLETED' | 'FAILED',
+      public readonly originalPath: string,
+      public frameUrls: string[] = [],
+      public error?: string,
+      public downloadZipUrl?: string,
+    ) {}
+  
+    static create(input: {
+      id: string;
+      userId: string;
+      originalPath: string;
+    }): Video {
+
+      if (!input.id || !input.userId || !input.originalPath) {
+        throw new Error('Invalid input data for creating a Video entity');
+      }
+      return new Video(
+        input.id,
+        input.userId,
+        'AWAITING_UPLOAD',
+        input.originalPath
+      );
     }
 
-    public async extractFrames(): Promise<void> {
-        await this.processor.extractFrames(this.originalPath, this.framesPath);
+    markAsQueued(): void {
+      this.status = 'QUEUED';
     }
-
-    public async createZip(): Promise<string> {
-        this.zipPath = await this.zipper.createZip(this.framesPath, this.id);
-        if (!this.zipPath) {
-            throw new Error("Failed to create zip file");
-        }
-        return this.zipPath;
-    }
-
-    private generateId(): string {
-        return randomUUID();
+    
+    markAsProcessing(): void {
+      this.status = 'PROCESSING';
     }
 }
