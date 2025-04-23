@@ -1,7 +1,7 @@
 import { EnqueueVideo } from '../application/usecases/EnqueueVideo';
 import { FFmpegVideoProcessorAdapter } from '../infra/adapters/FFmpegWasmVideoProcessor';
 import { PrismaVideoRepository } from '../infra/repositories/VideoRepository';
-import { ProcessVideo } from '../application/usecases/ProcessVideo ';
+import { ProcessVideo } from '../application/usecases/ProcessVideo';
 import { S3VideoStorageService } from '../infra/storage/S3VideoStorageService';
 import { SQSClient } from '@aws-sdk/client-sqs';
 import { SqsQueueRepository } from '../infra/repositories/SqsQueueRepository';

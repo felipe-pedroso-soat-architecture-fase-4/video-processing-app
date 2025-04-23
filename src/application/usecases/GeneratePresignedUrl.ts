@@ -22,7 +22,7 @@ export class GeneratePresignedUrl {
         });
 
         const presignedUrl = await this.s3Storage.createPresignedUrl(key, userId, video.id);
-        this.videoRepository.save(video);
+        await this.videoRepository.save(video);
         
         return { presignedUrl, video };
     }

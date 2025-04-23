@@ -7,7 +7,7 @@ export class GetVideoByUserId {
 
     async execute(userId: string) {
         const videos = await this.videoRepository.findAllByUserId(userId);
-        return videos?.map(video => ({
+        return (videos || []).map(video => ({
             videoId: video.id,
             status: video.status,
             frameUrls: video.frameUrls,

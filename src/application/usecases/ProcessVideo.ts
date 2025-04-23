@@ -14,6 +14,8 @@ export class ProcessVideo {
     ) {}
 
     async execute(videoId: string) {
+        let tempDir = '';
+
         try {
             const video = await this.videoRepository.findById(videoId);
             if (!video) throw new Error('Video not found');
@@ -61,6 +63,10 @@ export class ProcessVideo {
 
         } catch (error: any) {
             console.error('Error processing video:', error);
+
+            if (tempDir && fs.existsSync(tempDir)) {
+                fs.rmSync(tempDir, { recursive: true });
+            }
             
             if (videoId) {
                 await this.videoRepository.updateStatus(videoId, 'FAILED', error?.message);

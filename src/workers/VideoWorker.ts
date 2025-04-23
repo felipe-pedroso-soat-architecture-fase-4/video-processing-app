@@ -2,7 +2,7 @@ import { DeleteMessageCommand, ReceiveMessageCommand, SQSClient } from '@aws-sdk
 
 import { EnqueueVideo } from '../application/usecases/EnqueueVideo';
 import { IStorage } from '../domain/ports/IStorage';
-import { ProcessVideo } from '../application/usecases/ProcessVideo ';
+import { ProcessVideo } from '../application/usecases/ProcessVideo';
 
 export class VideoWorker {
     constructor(
