@@ -1,6 +1,6 @@
 # Video Processing API
 
-API escalável para processamento de vídeos com geração de URLs pré-assinadas, extração de frames e armazenamento em nuvem, seguindo princípios de arquitetura limpa e Domain-Driven Design.
+API escalável para processamento de vídeos com geração de URLs pré-assinadas, extração de frames e armazenamento em nuvem, seguindo princípios de arquitetura limpa, arquitetura hexagonal e Domain-Driven Design.
 
 ## 🌟 Funcionalidades Principais
 - **Upload Seguro de Vídeos**: Geração de URLs pré-assinadas para upload direto ao S3
